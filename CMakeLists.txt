@@ -107,7 +107,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
  INCLUDE_DIRS include
- LIBRARIES lat_mvmnt_lib
+ LIBRARIES lat_mvmnt
  CATKIN_DEPENDS roscpp rospy std_msgs pacmod_msgs automotive_platform_msgs
 #  DEPENDS system_lib
 )
@@ -124,8 +124,8 @@ include_directories(
 )
 
 ## Declare a C++ library
-add_library(${PROJECT_NAME}_lib
-  src/lat_mvmnt_controller.cpp
+add_library(${PROJECT_NAME}
+  src/lat_mvmnt_controller
 )
 
 ## Add cmake target dependencies of the library
@@ -149,9 +149,9 @@ add_library(${PROJECT_NAME}_lib
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(${PROJECT_NAME}_lib
-  ${catkin_LIBRARIES}
-)
+# target_link_libraries(${PROJECT_NAME}
+#   ${catkin_LIBRARIES}
+# )
 
 #############
 ## Install ##
@@ -175,7 +175,7 @@ target_link_libraries(${PROJECT_NAME}_lib
 
 ## Mark libraries for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_libraries.html
-install(TARGETS ${PROJECT_NAME}_lib
+install(TARGETS ${PROJECT_NAME}
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
@@ -210,4 +210,5 @@ install(TARGETS ${PROJECT_NAME}_lib
 
 add_executable(${PROJECT_NAME}_node src/lat_mvmnt_node.cpp)
 target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME})
 

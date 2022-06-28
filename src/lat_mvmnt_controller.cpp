@@ -1,4 +1,4 @@
-#include "lat_mvmnt_controller.hpp"
+#include "lat_mvmnt/lat_mvmnt_controller.hpp"
 #include "ros/ros.h"
 #include <cstdint>
 
@@ -101,10 +101,8 @@ float LateralControl::curvature_to_wheelAngle(float curv){
 @return steer_rate (rad/s): speed to turn the steering wheels
 */
 float LateralControl::find_steering_rate(float max_curve_rate){
-    float steer_rate = 2.0;
+    float steer_rate = 0;
     
-    float  radius_rate = -1 * (radius_)*(radius_)*(max_curve_rate); // what happens if this is negative?
-
     // how to relate max radius rate to steering angle rate?
 
     if(steer_rate > 8) steer_rate = 8;

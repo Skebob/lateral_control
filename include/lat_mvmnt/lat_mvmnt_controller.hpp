@@ -46,7 +46,9 @@
 // class decleration 
 class LateralControl{
     public:
-        LateralControl(ros::NodeHandle* nh);
+        LateralControl();
+        
+        LateralControl(ros::NodeHandle *nh);
 
         void callback_steering(const automotive_platform_msgs::SteerMode::ConstPtr& msg);
 
