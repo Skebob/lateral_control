@@ -105,6 +105,13 @@ float LateralControl::find_steering_rate(float max_curve_rate){
     
     // how to relate max radius rate to steering angle rate?
 
+    // turn rate = [19.2 * L * curve_rate] / [L^2 * curve^2 + 1]
+
+    float numerator = 19.2 * wheelbase * max_curve_rate;
+    float denomenator = (wheelbase*wheelbase) * (curvature_*curvature_) + 1;
+
+    steer_rate = numerator / denomenator;
+
     if(steer_rate > 8) steer_rate = 8;
     if(steer_rate < 0) steer_rate = 0;
     
