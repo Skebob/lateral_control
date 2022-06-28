@@ -25,7 +25,7 @@ void LateralControl::PublishSteering(void){
     cmd.header.frame_id = "lat_controler";
 
     cmd.angular_position = steeringAngle_;
-    cmd.angular_velocity_limit = curvatureLimit_; // not sure if this is correct, may need to be a fuction of current car velocity
+    cmd.angular_velocity_limit = steeringAngleSpeed_; // not sure if this is correct, may need to be a fuction of current car velocity
     steer_cmd_pub_.publish(cmd);
 }
 
