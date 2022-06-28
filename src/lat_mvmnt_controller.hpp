@@ -43,7 +43,6 @@
     std_msgs/Bool | as_rx/enable
 */
 
-
 // class decleration 
 class LateralControl{
     public:
@@ -55,10 +54,15 @@ class LateralControl{
         //PRIVATE CONST ATTRIBUTES
         const float wheelbase = 2.565; // wheelbase is 256.6cm (2.565m) source: https://gem.polaris.com/en-us/e4/specs/
         //PRIVATE VARIABLES
-        float curvature_; // 1/m
-        float curvature_limit_; // 1/m/s
-        float wheelAngle_;
-        float steeringAngle_;
+        //from SSC interface
+        float curvature_; // [1/m]
+        float radius_; // 1/curvature [m]
+        float curvatureLimit_; // [1/m/s]
+        
+        // we find these
+        float wheelAngle_; //[rad]
+        float steeringAngle_; // [rad]
+        float steeringAngleSpeed_; // [rad/s]
 
         // subscribers to SSC interface
         ros::Subscriber steer_mode_sub_;
@@ -69,6 +73,10 @@ class LateralControl{
         float wheelAngle_to_steeringAngle(float wheelAngle);
 
         float curvature_to_wheelAngle(float curv);
+
+        float find_steering_rate(float max_curve_rate);
+
+        void FindSteering(void);
 
         void PublishSteering(void);
 

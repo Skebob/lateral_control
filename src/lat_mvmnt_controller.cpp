@@ -1,7 +1,10 @@
 #include "lat_mvmnt_controller.hpp"
 #include "ros/ros.h"
+#include <cstdint>
 
 #define PI 3.14159265
+
+#define TURN_THRESHHOLD 2 // when the sttering wheel is at a position above this magnitude [rad], it is considered a turn
 
 LateralControl::LateralControl(ros::NodeHandle* nh){
     // subsribers from SSC inferface
@@ -17,9 +20,12 @@ LateralControl::LateralControl(ros::NodeHandle* nh){
 */
 void LateralControl::PublishSteering(void){
     pacmod_msgs::PositionWithSpeed cmd;
+
     cmd.header.stamp = ros::Time::now();
+    cmd.header.frame_id = "lat_controler";
+
     cmd.angular_position = steeringAngle_;
-    cmd.angular_velocity_limit = curvature_limit_; // not sure if this is correct, may need to be a fuction of current car velocity
+    cmd.angular_velocity_limit = curvatureLimit_; // not sure if this is correct, may need to be a fuction of current car velocity
     steer_cmd_pub_.publish(cmd);
 }
 
@@ -28,7 +34,26 @@ void LateralControl::PublishSteering(void){
 @return void
 */
 void LateralControl::PublishTurn(void){
-    pacmod_msgs::PacmodCmd steering_cmd;
+    pacmod_msgs::PacmodCmd cmd;
+
+    cmd.header.stamp = ros::Time::now();
+    cmd.header.frame_id = "lat_controler";
+    uint16_t turn_direction;
+    if(steeringAngle_ > TURN_THRESHHOLD){
+        // right turn
+        turn_direction = cmd.TURN_RIGHT;
+    }
+    else if(steeringAngle_ < TURN_THRESHHOLD){
+        // left turn
+        turn_direction = cmd.TURN_LEFT;
+    }
+    else{
+        // no turn
+        turn_direction = cmd.TURN_NONE;
+    }
+
+    cmd.ui16_cmd = turn_direction;
+    turn_cmd_pub_.publish(cmd);
 }
 
 
@@ -65,26 +90,53 @@ float LateralControl::curvature_to_wheelAngle(float curv){
             radius = 1 / curvature 
             =>  wheel angle = arctan([wheelbase] * [curvature])
     */
-   
+
     wheelAngle = atan(curv*wheelbase);
 
     return wheelAngle;
 } 
 
+/*
+@param max_curv_rate (1/m/s): max rate for change in curvature
+@return steer_rate (rad/s): speed to turn the steering wheels
+*/
+float LateralControl::find_steering_rate(float max_curve_rate){
+    float steer_rate = 2.0;
+    
+    float  radius_rate = -1 * (radius_)*(radius_)*(max_curve_rate); // what happens if this is negative?
+
+    // how to relate max radius rate to steering angle rate?
+
+    if(steer_rate > 8) steer_rate = 8;
+    if(steer_rate < 0) steer_rate = 0;
+    
+    return steer_rate;
+} 
+
+/*
+@breif [from ssc_interface] -> curvature ---[bicycle model]---> wheel angle ---[experimental formula]---> steering angle -> [to PACmod]
+*/
+void LateralControl::FindSteering(void){
+    wheelAngle_ = curvature_to_wheelAngle(curvature_);
+    steeringAngle_ = wheelAngle_to_steeringAngle(wheelAngle_);
+
+    steeringAngleSpeed_ = find_steering_rate(curvatureLimit_);
+}
+
 /* 
-    @breif  called when desired curvature is published from ssc inferface
-            [from ssc_interface] -> curvature ---[bicycle model]---> wheel angle ---[experimental formula]---> steering angle -> [to PACmod]
- */
+@breif  called when desired curvature is published from ssc inferface
+*/
 void LateralControl::callback_steering(const automotive_platform_msgs::SteerMode::ConstPtr& msg){
     if(msg->mode == 1){
         // autonomy is active
         curvature_ = msg->curvature;
-        curvature_limit_ = msg->max_curvature_rate;
-
-        wheelAngle_ = curvature_to_wheelAngle(curvature_);
-
-        steeringAngle_ = wheelAngle_to_steeringAngle(wheelAngle_);
+        radius_ = 1 / curvature_;
+        curvatureLimit_ = msg->max_curvature_rate;
         
+        FindSteering();
+
         PublishSteering();
+
+        PublishTurn();
     }
 }
