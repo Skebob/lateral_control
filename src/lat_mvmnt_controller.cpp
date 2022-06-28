@@ -43,7 +43,7 @@ void LateralControl::PublishTurn(void){
         // right turn
         turn_direction = cmd.TURN_RIGHT;
     }
-    else if(steeringAngle_ < TURN_THRESHHOLD){
+    else if(steeringAngle_ < (-1 * TURN_THRESHHOLD)){
         // left turn
         turn_direction = cmd.TURN_LEFT;
     }
