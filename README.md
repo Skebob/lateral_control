@@ -1,1 +1,1 @@
-Lateral Controller, interfaces to PACmod
+Lateral Controller
